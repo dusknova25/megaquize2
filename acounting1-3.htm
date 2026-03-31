@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dusknova Mega Quiz | Ultimate Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050505;
+    --accent: #00FFFF;
+    --card: #0d0d0d;
+    --border: #1a1a1a;
+    --text: #ffffff;
+    --text-dim: #a0a0a0;
+  }
+
+  body { 
+    font-family: 'Inter', 'Hind Siliguri', sans-serif; 
+    background-color: var(--bg); color: var(--text); 
+    margin: 0; padding: 0; -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sticky Timer Header */
+  .header-nav {
+    position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+    background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .timer-box {
+    padding: 10px 30px; border-radius: 50px; background: rgba(0, 255, 255, 0.05);
+    border: 2px solid var(--accent); color: var(--accent);
+    font-weight: 800; font-size: 24px; font-family: monospace;
+  }
+
+  .wrapper { max-width: 850px; margin: 120px auto 50px; padding: 20px; }
+
+  /* Branding */
+  .logo-container { text-align: center; margin-bottom: 35px; }
+  .logo-top { width: 190px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.2)); }
+
+  .premium-card {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 50px; border-radius: 20px; box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+  }
+
+  h1 { 
+    text-align: center; font-size: 40px; font-weight: 800; color: #ffffff; 
+    margin: 0 0 45px; letter-spacing: 4px; text-transform: uppercase;
+  }
+
+  /* Form Grid */
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+  @media (max-width: 650px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .field { position: relative; margin-bottom: 25px; }
+  .field label { 
+    display: block; margin-bottom: 10px; font-size: 14px; font-weight: 700; 
+    text-transform: uppercase; color: var(--accent); letter-spacing: 1.5px;
+  }
+
+  input, select {
+    width: 100%; background: #000; border: 1px solid var(--border);
+    padding: 16px; border-radius: 12px; color: #fff; font-size: 15px;
+    transition: all 0.3s ease; box-sizing: border-box;
+  }
+
+  input:focus, select:focus { border-color: var(--accent); outline: none; background: #080808; }
+
+  /* Quiz Style */
+  .section-tag {
+    display: inline-block; padding: 10px 25px; background: var(--accent);
+    color: #000; font-weight: 800; font-size: 14px; border-radius: 6px;
+    margin-top: 60px; text-transform: uppercase;
+  }
+
+  .q-wrapper { margin: 40px 0 80px; border-bottom: 1px solid #1a1a1a; padding-bottom: 45px; }
+  .q-text { font-size: 26px; font-weight: 700; line-height: 1.6; margin-bottom: 30px; border-left: 6px solid var(--accent); padding-left: 25px; }
+  
+  .q-img { width: 100%; max-width: 500px; display: block; margin: 20px 0; border-radius: 12px; border: 1px solid var(--border); }
+
+  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 600px) { .opt-grid { grid-template-columns: 1fr; } }
+
+  .opt-btn {
+    padding: 22px; background: #0a0a0a; border: 1px solid var(--border);
+    border-radius: 14px; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; transition: 0.3s; font-weight: 600; font-size: 17px;
+  }
+
+  .opt-btn:hover { background: #151515; border-color: var(--accent); transform: translateX(8px); }
+  .opt-btn input { order: 2; margin-left: 15px; accent-color: var(--accent); transform: scale(1.5); }
+
+  .locked { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+
+  .btn-submit {
+    width: 100%; padding: 25px; background: var(--accent); color: #000;
+    border: none; border-radius: 14px; font-size: 22px; font-weight: 800;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 3px;
+    margin-top: 50px; transition: 0.4s;
+  }
+
+  .btn-submit:hover { background: #fff; box-shadow: 0 20px 60px rgba(0,255,255,0.4); }
+
+  #successView { display: none; text-align: center; padding: 100px 20px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="finish" src="https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg"></audio>
+
+<div class="header-nav" id="quizHeader" style="display:none;">
+  <div class="timer-box" id="clock">15:00</div>
+</div>
+
+<div class="wrapper">
+  <div class="premium-card" id="regPage">
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/6pvK6fVx/6316729327491419859-120-removebg-preview.png" class="logo-top" alt="Logo">
+    </div>
+    <h1>MEGA QUIZ</h1>
+    
+    <div class="form-grid">
+      <div class="field"><label>নাম *</label><input type="text" id="name" class="req" placeholder="আপনার পূর্ণ নাম"></div>
+      <div class="field"><label>ফোন নম্বর *</label><input type="text" id="phone" class="req" placeholder="01XXXXXXXXX"></div>
+      <div class="field"><label>কলেজ *</label><input type="text" id="college" class="req"></div>
+      
+      <div class="field">
+        <label>HSC ব্যাচ *</label>
+        <select id="batch" class="req">
+            <option value="">নির্বাচন করুন</option>
+            <option value="HSC 25">HSC 25</option>
+            <option value="HSC 26">HSC 26</option>
+            <option value="HSC 27">HSC 27</option>
+        </select>
+      </div>
+
+      <div class="field"><label>ইমেইল (GMAIL) *</label><input type="email" id="gmail" class="req" placeholder="example@gmail.com"></div>
+      <div class="field"><label>ফেসবুক আইডি লিঙ্ক *</label><input type="text" id="fb" class="req" placeholder="https://facebook.com/username"></div>
+    </div>
+
+    <div class="field">
+      <label>তুমি কি Dusknova Class করেছ ? *</label>
+      <select id="isStudent" class="req">
+        <option value="">নির্বাচন করুন</option>
+        <option value="হ্যাঁ">হ্যাঁ</option>
+        <option value="না">না</option>
+        <option value="আগে পড়তাম">আগে পড়তাম</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>তুমি Dusknova সম্পর্কে কীভাবে জানতে পেরেছো? *</label>
+      <select id="knowSource" class="req">
+        <option value="">নির্বাচন করুন</option>
+        <option value="Facebook">Facebook</option>
+        <option value="YouTube">YouTube</option>
+        <option value="Friend / Referral">Friend / Referral</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Website">Website</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <button class="btn-submit" onclick="startMegaQuiz()">কুইজ শুরু করুন</button>
+  </div>
+
+  <div id="quizPage" style="display:none;">
+    <div id="quizContent"></div>
+    <button class="btn-submit" id="finalSub" onclick="submitMegaQuiz()">কুইজ জমা দিন</button>
+  </div>
+
+  <div class="premium-card" id="successView">
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/6pvK6fVx/6316729327491419859-120-removebg-preview.png" class="logo-top" style="width: 260px;" alt="Logo">
+    </div>
+    <h2 style="color: var(--accent); font-size: 50px; font-weight: 800; margin: 30px 0;">ধন্যবাদ!</h2>
+    <p style="font-size: 24px; font-weight: 700;">আপনার উত্তর সফলভাবে সংরক্ষিত হয়েছে।</p>
+    <div style="height: 1px; background: var(--border); margin: 40px 0;"></div>
+    <p style="color: var(--text-dim); font-size: 18px;">ফলাফল খুব শীঘ্রই জানানো হবে।</p>
+  </div>
+</div>
+
+
+
+<script type="module">
+  // Firebase SDK থেকে প্রয়োজনীয় ফাংশনগুলো ইমপোর্ট করা হচ্ছে
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+
+  // আপনার দ্বিতীয় অ্যাপের Firebase কনফিগারেশন
+  const firebaseConfig = {
+    apiKey: "AIzaSyDgdPbdJlXBtBBx_JJnbi4fhWgHd5g0v_s",
+    authDomain: "megaquize2acc.firebaseapp.com",
+    projectId: "megaquize2acc",
+    storageBucket: "megaquize2acc.firebasestorage.app",
+    messagingSenderId: "472694642954",
+    appId: "1:472694642954:web:4fd5dddec46993e0d0c2f3",
+    measurementId: "G-TSJLGRGYLB"
+  };
+
+  // Firebase ইনিশিয়ালাইজ করা
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const analytics = getAnalytics(app);
+
+  // আপনি এখন 'db' ভ্যারিয়েবলটি ব্যবহার করে ডাটাবেসে কাজ করতে পারবে
+  
+const megaData = [
+    
+
+
+   
+    
+
+
+{ 
+  section: "হিসাববিজ্ঞান", 
+  questions: [
+    { 
+      q: "লুকা প্যাসিওলি ছিলেন-", 
+      options: ["ব্যবসায়ী", "অর্থনীতিবিদ", "হিসাবশাস্ত্রবিদ", "গণিতশাস্ত্রবিদ"], 
+      correct: 3 
+    },
+    { 
+      q: "হিসাববিজ্ঞানের আদিভূমি বলা হয়-", 
+      options: ["ভেনিসকে", "রোমকে", "নিউইয়র্ক", "প্যারিস"], 
+      correct: 0 
+    },
+    { 
+      q: "উত্তোলন হিসাব কোন ধরনের হিসাব?", 
+      options: ["স্থায়ী হিসাব", "সাময়িক হিসাব", "ব্যয় হিসাব", "নামিক হিসাব"], 
+      correct: 1 
+    },
+    { 
+      q: "ব্যবসায়ের অভ্যন্তরীণ দায় কোনটি?", 
+      options: ["বকেয়া ঋণের সুদ", "প্রদেয় হিসাব", "банк ঋণ", "মূলধন"], 
+      correct: 3 
+    },
+    { 
+      q: "জনাব ফাহিম ২০,০০০ টাকার পণ্য জনাব তামিমের নিকট বিক্রয় করেন এবং নগদে ১০,০০০ টাকা গ্রহণ করেন। জনাব ফাহিমের লেনদেনের উৎস দলিল কোনটি?", 
+      options: ["চালান", "ভাউচার", "ডেবিট নোট", "ক্রেডিট নোট"], 
+      correct: 0 
+    },
+    { 
+      q: "জনাব ফাহিমের লেনদেনের ক্ষেত্রে হিসাবরক্ষককে সংরক্ষণ করা উচিত- \ni. ক্রেডিট ভাউচার \nii. ক্যাশমেমো \niii. প্রাপ্ত রসিদ", 
+      options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], 
+      correct: 0 
+    },
+    { 
+      q: "ব্যবসায়ের সম্পত্তির ওপর মালিক বা মালিকদের দাবিকে কী বলে?", 
+      options: ["সম্পত্তি", "দায়", "মালিকানাস্বত্ব", "ব্যবসায়িক স্বত্বা"], 
+      correct: 2 
+    },
+    { 
+      q: "বাকিতে পণ্য বিক্রয় হলো কোন ধরনের লেনদেন?", 
+      options: ["নগদ লেনদেন", "অদৃশ্য লেনদেন", "আন্তঃলেনদেন", "বহিঃলেনদেন"], 
+      correct: 3 
+    },
+    { 
+      q: "জাবেদাকে কী বলা হয়?", 
+      options: ["পাকা বই", "চূড়ান্ত বই", "প্রাথমিক বই", "প্রধান বই"], 
+      correct: 2 
+    },
+    { 
+      q: "তালিকা মূল্যের ওপর ক্রেতাকে যে ছাড় দেওয়া হয় তাকে কী বলে?", 
+      options: ["কারবারি বাট্টা", "নগদ বাট্টা", "মঞ্জুরিকৃত বাট্টা", "প্রদত্ত বাট্টা"], 
+      correct: 0 
+    },
+    { 
+      q: "চৈতি ট্রেডার্স ১ জানুয়ারি ২০২০ তারিখে ২০,০০০ টাকার পণ্য ১০% বাট্টায় বাকিতে ক্রয় করে। ৮ জানুয়ারি উক্ত প্রদেয় হিসাবের অর্ধেক ২% বাট্টায় পরিশোধ করে। চৈতি ট্রেডার্সের হিসাবভুক্ত বাট্টার পরিমাণ কত?", 
+      options: ["৪০০ টাকা", "৩৬০ টাকা", "২০০ টাকা", "১৮০ টাকা"], 
+      correct: 1 
+    },
+    { 
+      q: "৮ জানুয়ারি তারিখে প্রদেয় হিসাবটি বাট্টায় পরিশোধের ফলে, চৈতি ট্রেডার্সের- \ni. মুনাফার পরিমাণ বৃদ্ধি পাবে \nii. সম্পদ বৃদ্ধি পাবে \niii. দায় হ্রাস পাবে", 
+      options: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], 
+      correct: 3 
+    },
+    { 
+      q: "দুতরফা দাখিলার উৎপত্তি কাল কোনটি?", 
+      options: ["১৪৪৯ খ্রিষ্টাব্দে", "১৪৯৪ খ্রিষ্টাব্দে", "১৯৩২ খ্রিষ্টাব্দে", "১৯৯৪ খ্রিষ্টাব্দে"], 
+      correct: 1 
+    },
+    { 
+      q: "ব্যবসায়ের অ-নগদ লেনদেন কোনটি?", 
+      options: ["মজুরি", "বেতন", "অবচয়", "কমিশন"], 
+      correct: 2 
+    },
+    { 
+      q: "জনাব মুশফিক ১ জানুয়ারি ব্যাংক উদ্বৃত্ত ২,০০,০০০ টাকা, ৫০,০০০ টাকার আসবাবপত্র ও ৩০,০০০ টাকার পণ্যদ্রব্য নিয়ে ব্যবসা আরম্ভ করেন এবং উক্ত মাসে ১,০০,০০০ টাকা ব্যাংক ঋণ গ্রহণ করেন। তার প্রারম্ভিক মূলধনের পরিমাণ কত?", 
+      options: ["১,৮০,০০০ টাকা", "২,৮০,০০০ টাকা", "৩,৫০,০০০ টাকা", "৩,৮০,০০০ টাকা"], 
+      correct: 1 
+    },
+    { 
+      q: "১,০০,০০০ টাকার ব্যাংক ঋণের লেনদেনের দ্বারা জনাব মুশফিকের কী বৃদ্ধি পেয়েছে?", 
+      options: ["দীর্ঘমেয়াদি দায়", "চলতি দায়", "মূলধন হিসাব", "মালিকানাস্বত্ব"], 
+      correct: 0 
+    },
+    { 
+      q: "কোন দলিলের ওপর ভিত্তি করে বিক্রয় জাবেদা প্রস্তুত করা হয়?", 
+      options: ["ডেবিট নোট", "ক্রেডিট নোট", "ভাউচার", "চালান"], 
+      correct: 3 
+    },
+    { 
+      q: "হিসাব সমীকরণে (A = L + OE) OE এর বর্ধিত অংশের সঠিক রূপ কোনটি?", 
+      options: ["C + D + R – E", "C – D – R + E", "C – D – R – E", "C – D + R – E"], 
+      correct: 3 
+    },
+    { 
+      q: "জার (Jour) শব্দের অর্থ কী?", 
+      options: ["দিবস", "তাক", "সংরক্ষণ", "পাত্র"], 
+      correct: 0 
+    },
+    { 
+      q: "মূলধনের সুদ কারবারের জন্য কী?", 
+      options: ["আয়", "দায়", "খরচ", "সম্পদ"], 
+      correct: 2 
+    },
+    { 
+      q: "ব্যাংক সমন্বয় বিবরণী কখন তৈরি করা হয়?", 
+      options: ["হিসাবকালের যে কোনো সময়", "হিসাবকালের নির্দিষ্ট তারিখে", "হিসাবকালের প্রথম তারিখে", "হিসাবকালের শেষ তারিখে"], 
+      correct: 1 
+    },
+    { 
+      q: "ব্যাংক সমন্বয় বিবরণীকে কী বলা হয়?", 
+      options: ["হিসাব বিবরণী", "আয়-ব্যয় বিবরণী", "খরচ বিবরণী", "মিলকরণ বিবরণী"], 
+      correct: 3 
+    },
+    { 
+      q: "NSF চেক অর্থ কী?", 
+      options: ["জমাকৃত চেক প্রত্যাখ্যান", "জমাকৃত চেক আদায়", "ইস্যুকৃত চেক উপস্থাপন হয়েছে", "ইস্যুকৃত চেক উপস্থাপন হয়নি"], 
+      correct: 0 
+    },
+    { 
+      q: "ব্যাংক কর্তৃক ধার্যকৃত চার্জ ৫০০ টাকা ভুলে নগদান বহিতে দুবার লেখার ফলে ব্যাংক সমন্বয় বিবরণীতে গরমিলের পরিমাণ কত হবে?", 
+      options: ["১,৫০০ টাকা", "১,০০০ টাকা", "৫০০ টাকা", "২৫০ টাকা"], 
+      correct: 2 
+    },
+    { 
+      q: "ব্যাংক বিবরণীর ক্রেডিট উদ্বৃত্ত দ্বারা কী বোঝায়?", 
+      options: ["ব্যাংক জমাতিরিক্ত", "ব্যাংক জমার উদ্বৃত্ত", "ব্যাংকে স্থায়ী জমা", "ব্যাংক ঋণ"], 
+      correct: 0 
+    },
+    { 
+      q: "ব্যাংক হিসাব প্রধানত কত প্রকার?", 
+      options: ["২ প্রকার", "৩ প্রকার", "৪ প্রকার", "৫ প্রকার"], 
+      correct: 1 
+    },
+    { 
+      q: "ব্যাংক চার্জ ২৬০ টাকা নগদান বইতে ভুলক্রমে ৬২০ টাকা ডেবিট করা হয়েছে। এর ফলে গড়মিলের পরিমাণ কত হবে?", 
+      options: ["২৬০ টাকা", "৩৬০ টাকা", "৬২০ টাকা", "৮৮০ টাকা"], 
+      correct: 3 
+    },
+    { 
+      q: "আমানতকারীর ব্যাংকে জমা টাকার পরিমাণ হ্রাস করে কোনটি?", 
+      options: ["ডেবিট মেমোরেন্ডাম", "ক্রেডিট মেমোরেন্ডাম", "এনএসএফ চেক", "পরিবহনাধীন চেক"], 
+      correct: 0 
+    },
+    { 
+      q: "ব্যাংক কর্তৃক সুদ মঞ্জুর ১,০০০ টাকা। আমানতকারীর বইতে ডেবিট হবে কোনটি?", 
+      options: ["নগদান হিসাব", "ব্যাংক হিসাব", "সুদ খরচ হিসাব", "সুদ আয় হিসাব"], 
+      correct: 1 
+    },
+    { 
+      q: "পর্যাপ্ত ফান্ডের অভাবে অমর্যাদাকৃত চেককে কী বলে?", 
+      options: ["বাহকের চেক", "দাগকাটা চেক", "অ্যাকাউন্ট পেয়ি চেক", "এন এস এফ (NSF) চেক"], 
+      correct: 3 
+    }
+  ]
+}
+
+
+  ];
+
+
+
+  let timer = 20 * 60;
+  let interval;
+  let startTime;
+
+  window.startMegaQuiz = function() {
+    const inputs = document.querySelectorAll(".req");
+    let valid = true;
+    inputs.forEach(i => {
+      if(!i.value.trim()){ i.style.borderColor = "#ff4444"; valid = false; }
+      else { i.style.borderColor = "var(--border)"; }
+    });
+
+    if(!valid) return alert("দয়া করে সবকটি ঘর পূরণ করুন!");
+
+    document.getElementById("beep").play();
+    document.getElementById("regPage").style.display = "none";
+    document.getElementById("quizPage").style.display = "block";
+    document.getElementById("quizHeader").style.display = "flex";
+    
+    renderQuestions();
+    startTimer();
+    startTime = Date.now();
+  };
+
+  function renderQuestions() {
+    const container = document.getElementById("quizContent");
+    let html = "";
+    megaData.forEach((s, sI) => {
+      html += `<div class="section-tag">${s.section}</div>`;
+      s.questions.forEach((q, qI) => {
+        const imagePart = q.img ? `<img src="${q.img}" class="q-img">` : "";
+        html += `
+          <div class="q-wrapper">
+            <div class="q-text">প্রশ্ন ${qI + 1}: ${q.q}</div>
+            ${imagePart}
+            <div class="opt-grid" id="lock-grp-${sI}-${qI}">
+              ${q.options.map((o, i) => `
+                <label class="opt-btn">
+                  <span>${o}</span>
+                  <input type="radio" name="s${sI}q${qI}" value="${i}" onclick="lockOption(${sI}, ${qI})">
+                </label>`).join('')}
+            </div>
+          </div>
+        `;
+      });
+    });
+    container.innerHTML = html;
+    MathJax.typeset();
+  }
+
+  window.lockOption = function(sI, qI) {
+    document.getElementById(`lock-grp-${sI}-${qI}`).classList.add("locked");
+  };
+
+  function startTimer() {
+    interval = setInterval(() => {
+      let m = Math.floor(timer / 60);
+      let s = timer % 60;
+      document.getElementById("clock").textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+      if (timer <= 0) { clearInterval(interval); submitMegaQuiz(true); }
+      timer--;
+    }, 1000);
+  }
+
+  window.submitMegaQuiz = function(auto = false) {
+    if(!auto && !confirm("আপনি কি কুইজটি জমা দিতে চান?")) return;
+    
+    const endTime = Date.now();
+    const timeTaken = Math.floor((endTime - startTime) / 1000);
+    
+    clearInterval(interval);
+    document.getElementById("finish").play();
+    document.getElementById("finalSub").disabled = true;
+
+    let marks = 0;
+    megaData.forEach((s, sI) => {
+      s.questions.forEach((q, qI) => {
+        const sel = document.querySelector(`input[name="s${sI}q${qI}"]:checked`);
+        if(sel && parseInt(sel.value) === q.correct) marks += 1;
+      });
+    });
+
+    const payload = {
+      user_info: {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        college: document.getElementById("college").value,
+        batch: document.getElementById("batch").value,
+        email: document.getElementById("gmail").value,
+        fb_profile: document.getElementById("fb").value,
+        is_dusknova_student: document.getElementById("isStudent").value,
+        discovery_source: document.getElementById("knowSource").value
+      },
+      score: marks,
+      time_taken_seconds: timeTaken,
+      submitted_at: new Date().toLocaleString()
+    };
+
+    push(ref(db, 'mega_quiz_responses/'), payload)
+      .then(() => {
+        document.getElementById("quizPage").style.display = "none";
+        document.getElementById("quizHeader").style.display = "none";
+        document.getElementById("successView").style.display = "block";
+        window.scrollTo(0,0);
+      })
+      .catch((error) => {
+        console.error("Firebase Error:", error);
+        alert("ডাটা জমা দিতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।");
+        document.getElementById("finalSub").disabled = false;
+      });
+  };
+</script>
+
+<script>
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+});
+
+document.addEventListener("copy", function(e){
+  e.preventDefault();
+});
+
+document.addEventListener("selectstart", function(e){
+  e.preventDefault();
+});
+</script>
+
+<script>
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden){
+    alert("Tab change detected! Exam closed.");
+    window.location.href="about:blank";
+  }
+});
+</script>
+
+<script>
+document.addEventListener("keyup", function(e){
+  if(e.key === "PrintScreen"){
+    alert("Screenshot not allowed!");
+  }
+});
+</script>
+
+
+
+<script>
+document.onkeydown = function(e) {
+  if (e.keyCode == 123) {
+    return false;
+  }
+  if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)){
+    return false;
+  }
+}
+</script>
+
+<script>
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("selectstart", e => e.preventDefault());
+
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden){
+    alert("Tab change detected!");
+  }
+});
+</script>
+
+
+
+
+
+
+</body>
+</html>
